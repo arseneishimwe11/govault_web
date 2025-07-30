@@ -154,7 +154,7 @@ export default function VaultifyApp() {
           <div className="flex items-center gap-2">
             <Lock className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              Vaultify
+              GoVault
             </span>
           </div>
           <div className="ml-auto flex items-center gap-2">
