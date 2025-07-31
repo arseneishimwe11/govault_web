@@ -488,64 +488,64 @@ export default function VaultifyApp() {
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-4">
                               <div className="space-y-2">
-                                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Token:</Label>
-                                <div className="flex items-center gap-2">
-                                  <code className="flex-1 rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm font-mono border">
-                                    {result.token}
-                                  </code>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    onClick={() => copyToClipboard(result.token)}
-                                    className="rounded-xl transition-all duration-300 hover:scale-105"
-                                  >
-                                    <Copy className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                              <Label className="text-sm font-semibold text-green-800 dark:text-green-200">Token:</Label>
+                              <div className="flex items-center gap-2">
+                              <code className="flex-1 rounded-xl bg-white dark:bg-slate-800 px-4 py-3 text-sm font-mono border border-green-200 dark:border-green-700 text-green-900 dark:text-green-100">
+                              {result.token}
+                              </code>
+                              <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => copyToClipboard(result.token)}
+                              className="rounded-xl transition-all duration-300 hover:scale-105 border-green-300 hover:border-green-400 text-green-700 hover:text-green-800 dark:border-green-600 dark:text-green-300 dark:hover:text-green-200"
+                              >
+                              <Copy className="h-4 w-4" />
+                              </Button>
+                              </div>
                               </div>
                               
                               <div className="space-y-2">
-                                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Share URL:</Label>
-                                <div className="flex items-center gap-2">
-                                  <code className="flex-1 rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm font-mono border truncate">
-                                    {result.shareUrl}
-                                  </code>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    onClick={() => copyToClipboard(result.shareUrl)}
-                                    className="rounded-xl transition-all duration-300 hover:scale-105"
-                                  >
-                                    <Copy className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                              <Label className="text-sm font-semibold text-green-800 dark:text-green-200">Share URL:</Label>
+                              <div className="flex items-center gap-2">
+                              <code className="flex-1 rounded-xl bg-white dark:bg-slate-800 px-4 py-3 text-sm font-mono border border-green-200 dark:border-green-700 truncate text-green-900 dark:text-green-100">
+                              {result.shareUrl}
+                              </code>
+                              <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => copyToClipboard(result.shareUrl)}
+                              className="rounded-xl transition-all duration-300 hover:scale-105 border-green-300 hover:border-green-400 text-green-700 hover:text-green-800 dark:border-green-600 dark:text-green-300 dark:hover:text-green-200"
+                              >
+                              <Copy className="h-4 w-4" />
+                              </Button>
+                              </div>
                               </div>
                               
-                              <div className="text-sm text-slate-600 dark:text-slate-300 space-y-1">
-                                <p><span className="font-medium">Expires:</span> {new Date(result.expiresAt).toLocaleString()}</p>
-                                {result.isFile && (
-                                  <p><span className="font-medium">📄 File:</span> {result.fileName}</p>
-                                )}
+                              <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                              <p><span className="font-medium">Expires:</span> {new Date(result.expiresAt).toLocaleString()}</p>
+                              {result.isFile && (
+                              <p><span className="font-medium">📄 File:</span> {result.fileName}</p>
+                              )}
                               </div>
                             </div>
                             
                             {qrCodeDataUrl && (
-                              <div className="flex flex-col items-center space-y-4">
-                                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                  <QrCode className="h-4 w-4" />
-                                  QR Code for Mobile
-                                </Label>
-                                <div className="p-4 bg-white rounded-2xl border-2 border-slate-200 dark:border-slate-600 shadow-lg">
-                                  <img 
-                                    src={qrCodeDataUrl} 
-                                    alt="QR Code for secret sharing" 
-                                    className="rounded-xl" 
-                                  />
-                                </div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-                                  Scan to access on mobile
-                                </p>
-                              </div>
+                            <div className="flex flex-col items-center space-y-4">
+                            <Label className="text-sm font-semibold text-green-800 dark:text-green-200 flex items-center gap-2">
+                            <QrCode className="h-4 w-4" />
+                            QR Code for Mobile
+                            </Label>
+                            <div className="p-4 bg-white rounded-2xl border-2 border-green-200 dark:border-green-600 shadow-lg">
+                            <img 
+                            src={qrCodeDataUrl} 
+                            alt="QR Code for secret sharing" 
+                            className="rounded-xl" 
+                            />
+                            </div>
+                            <p className="text-xs text-green-600 dark:text-green-400 text-center">
+                            Scan to access on mobile
+                            </p>
+                            </div>
                             )}
                           </div>
                         </AlertDescription>
