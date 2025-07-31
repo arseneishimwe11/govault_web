@@ -162,7 +162,7 @@ export default function VaultifyApp() {
               </div>
               <div className="space-y-0.5">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  Vaultify
+                  GoVault
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Zero-Knowledge Security</p>
               </div>
