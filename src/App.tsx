@@ -201,7 +201,7 @@ export default function VaultifyApp() {
               </div>
               <div className="space-y-[-4px]">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  Vaultify
+                  GoVault
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Zero-Knowledge Security</p>
               </div>
@@ -235,7 +235,7 @@ export default function VaultifyApp() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      <section className="relative py-20 lg:py-32 overflow-hidden mozilla-headline-normal">
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="space-y-6">
@@ -244,7 +244,7 @@ export default function VaultifyApp() {
                 Military-Grade Encryption
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-tight">
+              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-tight rowdies-regular">
                 <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent">
                   Share Secrets
                 </span>
