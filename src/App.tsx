@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Copy, Download, Eye, EyeOff, Lock, Send, Shield, Timer, QrCode, Upload, FileText, BarChart3, Sparkles, Zap, CheckCircle2, Globe, Users, Star } from "lucide-react";
+import { AlertCircle, Copy, Download, Eye, EyeOff, Lock, Send, Shield, Timer, QrCode, Upload, FileText, BarChart3, Sparkles, Zap, CheckCircle2, Globe, Users, Star, Moon, Sun } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import QRCode from 'qrcode';
 
@@ -20,13 +20,46 @@ export default function VaultifyApp() {
   const [retrieveToken, setRetrieveToken] = useState("");
   const [retrievePassword, setRetrievePassword] = useState("");
   const [showRetrievePassword, setShowRetrievePassword] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  
+  // Separate states for send and retrieve operations
+  const [sendResult, setSendResult] = useState<any>(null);
+  const [retrieveResult, setRetrieveResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [useFileUpload, setUseFileUpload] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [storedSecrets, setStoredSecrets] = useState<any[]>([]);
+  
+  // Dark mode state
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('darkMode') === 'true' || 
+             (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
+
+  // Effect to apply dark mode
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', isDarkMode.toString());
+  }, [isDarkMode]);
+
+  // Clear alerts when switching tabs
+  useEffect(() => {
+    setSendResult(null);
+    setRetrieveResult(null);
+    setQrCodeDataUrl("");
+  }, [activeTab]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -58,68 +91,74 @@ export default function VaultifyApp() {
   };
 
   const handleSendSecret = async () => {
-    let secretToSend = secret;
-    
-    if (useFileUpload && selectedFile) {
-      secretToSend = `File: ${selectedFile.name}\nContent: ${secret}`;
-    }
-    
-    if (!secretToSend.trim() || !password.trim()) {
-      setResult({ error: "Secret and password are required" });
-      return;
-    }
+  // Clear previous results
+  setSendResult(null);
+  
+  let secretToSend = secret;
+  
+  if (useFileUpload && selectedFile) {
+    secretToSend = `File: ${selectedFile.name}\nContent: ${secret}`;
+  }
+  
+  if (!secretToSend.trim() || !password.trim()) {
+      setSendResult({ error: "Secret and password are required" });
+    return;
+  }
 
-    setLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockToken = `vlt_${Math.random().toString(36).substring(2, 15)}`;
-      const expiresAt = new Date(Date.now() + parseTTL(ttl) * 1000);
-      const shareUrl = `${window.location.origin}/s/${mockToken}`;
-      
-      const newSecret = {
-        token: mockToken,
-        shareUrl,
-        expiresAt: expiresAt.toISOString(),
-        createdAt: new Date().toISOString(),
-        ttl,
-        maxReads: parseInt(maxReads),
-        isFile: useFileUpload && selectedFile,
-        fileName: selectedFile?.name
-      };
-      
-      setStoredSecrets(prev => [...prev, newSecret]);
-      await generateQRCode(shareUrl);
-      
-      setResult({
-        success: true,
-        ...newSecret
-      });
-    } catch (error) {
-      setResult({ error: "Failed to store secret" });
+  setLoading(true);
+  try {
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const mockToken = `vlt_${Math.random().toString(36).substring(2, 15)}`;
+  const expiresAt = new Date(Date.now() + parseTTL(ttl) * 1000);
+  const shareUrl = `${window.location.origin}/s/${mockToken}`;
+  
+  const newSecret = {
+  token: mockToken,
+  shareUrl,
+  expiresAt: expiresAt.toISOString(),
+  createdAt: new Date().toISOString(),
+  ttl,
+    maxReads: parseInt(maxReads),
+    isFile: useFileUpload && selectedFile,
+    fileName: selectedFile?.name
+  };
+  
+  setStoredSecrets(prev => [...prev, newSecret]);
+  await generateQRCode(shareUrl);
+  
+  setSendResult({
+      success: true,
+    ...newSecret
+    });
+  } catch (error) {
+    setSendResult({ error: "Failed to store secret" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleRetrieveSecret = async () => {
-    if (!retrieveToken.trim() || !retrievePassword.trim()) {
-      setResult({ error: "Token and password are required" });
-      return;
-    }
+  // Clear previous results
+  setRetrieveResult(null);
+  
+  if (!retrieveToken.trim() || !retrievePassword.trim()) {
+      setRetrieveResult({ error: "Token and password are required" });
+    return;
+  }
 
-    setLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setResult({
-        success: true,
-        retrievedSecret: "This is your decrypted secret!",
-        readsRemaining: 0,
-        createdAt: new Date(Date.now() - 3600000).toISOString()
-      });
-    } catch (error) {
-      setResult({ error: "Failed to retrieve secret" });
+  setLoading(true);
+  try {
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  setRetrieveResult({
+  success: true,
+    retrievedSecret: "This is your decrypted secret!",
+      readsRemaining: 0,
+    createdAt: new Date(Date.now() - 3600000).toISOString()
+    });
+  } catch (error) {
+    setRetrieveResult({ error: "Failed to retrieve secret" });
     } finally {
       setLoading(false);
     }
@@ -162,12 +201,12 @@ export default function VaultifyApp() {
               </div>
               <div className="space-y-[-4px]">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  GoVault
+                  Vaultify
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Zero-Knowledge Security</p>
               </div>
             </div>
-            
+
             <div className="hidden sm:flex items-center space-x-3">
               <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800 px-3 py-1 gap-2 transition-all duration-300 hover:scale-105">
                 <CheckCircle2 className="h-3 w-3" />
@@ -177,6 +216,19 @@ export default function VaultifyApp() {
                 <Globe className="h-3 w-3" />
                 Secure
               </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300"
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode ? (
+                  <Sun className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                ) : (
+                  <Moon className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                )}
+              </Button>
             </div>
           </div>
         </div>
@@ -191,7 +243,7 @@ export default function VaultifyApp() {
                 <Sparkles className="h-4 w-4" />
                 Military-Grade Encryption
               </div>
-              
+
               <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-tight">
                 <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent">
                   Share Secrets
@@ -201,7 +253,7 @@ export default function VaultifyApp() {
                   Securely
                 </span>
               </h1>
-              
+
               <p className="text-xl lg:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
                 End-to-end encrypted, ephemeral secret sharing with{" "}
                 <span className="font-semibold text-slate-900 dark:text-white">zero-knowledge architecture</span>.
@@ -276,22 +328,22 @@ export default function VaultifyApp() {
           <div className="max-w-5xl mx-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-12 h-14 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700">
-                <TabsTrigger 
-                  value="send" 
+                <TabsTrigger
+                  value="send"
                   className="flex items-center gap-3 text-sm font-medium rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-200/50 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:shadow-slate-900/50 transition-all duration-300"
                 >
                   <Send className="h-4 w-4" />
                   Send Secret
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="retrieve" 
+                <TabsTrigger
+                  value="retrieve"
                   className="flex items-center gap-3 text-sm font-medium rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-200/50 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:shadow-slate-900/50 transition-all duration-300"
                 >
                   <Download className="h-4 w-4" />
                   Retrieve Secret
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="dashboard" 
+                <TabsTrigger
+                  value="dashboard"
                   className="flex items-center gap-3 text-sm font-medium rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-200/50 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:shadow-slate-900/50 transition-all duration-300"
                 >
                   <BarChart3 className="h-4 w-4" />
@@ -317,7 +369,7 @@ export default function VaultifyApp() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="p-8 space-y-8">
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
@@ -349,7 +401,7 @@ export default function VaultifyApp() {
                           )}
                         </div>
                       </div>
-                      
+
                       {useFileUpload ? (
                         <div className="space-y-4">
                           <input
@@ -463,8 +515,8 @@ export default function VaultifyApp() {
                       </div>
                     </div>
 
-                    <Button 
-                      onClick={handleSendSecret} 
+                    <Button
+                      onClick={handleSendSecret}
                       disabled={loading || !secret.trim() || !password.trim()}
                       className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/30 disabled:opacity-50 disabled:hover:scale-100"
                       size="lg"
@@ -473,90 +525,90 @@ export default function VaultifyApp() {
                       {loading ? "Encrypting & Storing..." : "Send Secret"}
                     </Button>
 
-                    {result && result.success && (
-                      <Alert className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:border-green-800 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 rounded-xl bg-green-100 dark:bg-green-900/30">
+                    {sendResult && sendResult.success && (
+                      <Alert className="relative z-50 border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:border-green-800 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl p-6 shadow-2xl shadow-green-500/10">
+                        <div className="flex items-center gap-3 mb-4 whitespace-nowrap">
+                          <span className="p-2 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center">
                             <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
-                          </div>
-                          <div className="font-bold text-green-800 dark:text-green-200 text-lg">
+                          </span>
+                          <span className="font-bold text-green-800 dark:text-green-200 text-sm whitespace-nowrap">
                             ✨ Secret stored successfully!
-                          </div>
+                          </span>
                         </div>
-                        
+
                         <AlertDescription className="space-y-6">
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="space-y-4">
+                            <div className="space-y-6 mt-12">
                               <div className="space-y-2">
-                              <Label className="text-sm font-semibold text-green-800 dark:text-green-200">Token:</Label>
-                              <div className="flex items-center gap-2">
-                              <code className="flex-1 rounded-xl bg-white dark:bg-slate-800 px-4 py-3 text-sm font-mono border border-green-200 dark:border-green-700 text-green-900 dark:text-green-100">
-                              {result.token}
-                              </code>
-                              <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => copyToClipboard(result.token)}
-                              className="rounded-xl transition-all duration-300 hover:scale-105 border-green-300 hover:border-green-400 text-green-700 hover:text-green-800 dark:border-green-600 dark:text-green-300 dark:hover:text-green-200"
-                              >
-                              <Copy className="h-4 w-4" />
-                              </Button>
+                                <Label className="text-sm font-semibold text-green-800 dark:text-green-200">Token:</Label>
+                                <div className="flex items-center gap-2">
+                                  <code className="flex-1 rounded-xl bg-white dark:bg-slate-800 px-4 py-3 text-sm font-mono border border-green-200 dark:border-green-700 text-green-900 dark:text-green-100">
+                                  {sendResult.token}
+                                  </code>
+                                  <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => copyToClipboard(sendResult.token)}
+                                    className="rounded-xl transition-all duration-300 hover:scale-105 border-green-300 hover:border-green-400 text-green-700 hover:text-green-800 dark:border-green-600 dark:text-green-300 dark:hover:text-green-200"
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              </div>
-                              
+
                               <div className="space-y-2">
-                              <Label className="text-sm font-semibold text-green-800 dark:text-green-200">Share URL:</Label>
-                              <div className="flex items-center gap-2">
-                              <code className="flex-1 rounded-xl bg-white dark:bg-slate-800 px-4 py-3 text-sm font-mono border border-green-200 dark:border-green-700 truncate text-green-900 dark:text-green-100">
-                              {result.shareUrl}
-                              </code>
-                              <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => copyToClipboard(result.shareUrl)}
-                              className="rounded-xl transition-all duration-300 hover:scale-105 border-green-300 hover:border-green-400 text-green-700 hover:text-green-800 dark:border-green-600 dark:text-green-300 dark:hover:text-green-200"
-                              >
-                              <Copy className="h-4 w-4" />
-                              </Button>
+                                <Label className="text-sm font-semibold text-green-800 dark:text-green-200">Share URL:</Label>
+                                <div className="flex items-center gap-2">
+                                  <code className="flex-1 rounded-xl bg-white dark:bg-slate-800 px-4 py-3 text-sm font-mono border border-green-200 dark:border-green-700 truncate text-green-900 dark:text-green-100">
+                                  {sendResult.shareUrl}
+                                  </code>
+                                  <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => copyToClipboard(sendResult.shareUrl)}
+                                    className="rounded-xl transition-all duration-300 hover:scale-105 border-green-300 hover:border-green-400 text-green-700 hover:text-green-800 dark:border-green-600 dark:text-green-300 dark:hover:text-green-200"
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              </div>
-                              
+
                               <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
-                              <p><span className="font-medium">Expires:</span> {new Date(result.expiresAt).toLocaleString()}</p>
-                              {result.isFile && (
-                              <p><span className="font-medium">📄 File:</span> {result.fileName}</p>
-                              )}
+                                <p><span className="font-medium">Expires:</span> {new Date(sendResult.expiresAt).toLocaleString()}</p>
+                                {sendResult.isFile && (
+                                  <p><span className="font-medium">📄 File:</span> {sendResult.fileName}</p>
+                                )}
                               </div>
                             </div>
-                            
+
                             {qrCodeDataUrl && (
-                            <div className="flex flex-col items-center space-y-4">
-                            <Label className="text-sm font-semibold text-green-800 dark:text-green-200 flex items-center gap-2">
-                            <QrCode className="h-4 w-4" />
-                            QR Code for Mobile
-                            </Label>
-                            <div className="p-4 bg-white rounded-2xl border-2 border-green-200 dark:border-green-600 shadow-lg">
-                            <img 
-                            src={qrCodeDataUrl} 
-                            alt="QR Code for secret sharing" 
-                            className="rounded-xl" 
-                            />
-                            </div>
-                            <p className="text-xs text-green-600 dark:text-green-400 text-center">
-                            Scan to access on mobile
-                            </p>
-                            </div>
+                              <div className="flex flex-col items-center space-y-4">
+                                <Label className="text-sm font-semibold text-green-800 dark:text-green-200 flex items-center gap-2">
+                                  <QrCode className="h-4 w-4" />
+                                  QR Code for Mobile
+                                </Label>
+                                <div className="p-4 bg-white rounded-2xl border-2 border-green-200 dark:border-green-600 shadow-lg">
+                                  <img
+                                    src={qrCodeDataUrl}
+                                    alt="QR Code for secret sharing"
+                                    className="rounded-xl"
+                                  />
+                                </div>
+                                <p className="text-xs text-green-600 dark:text-green-400 text-center">
+                                  Scan to access on mobile
+                                </p>
+                              </div>
                             )}
                           </div>
                         </AlertDescription>
                       </Alert>
                     )}
 
-                    {result && result.error && (
-                      <Alert variant="destructive" className="border-2 rounded-2xl">
-                        <AlertCircle className="h-5 w-5" />
-                        <AlertDescription className="text-base">{result.error}</AlertDescription>
-                      </Alert>
+                    {sendResult && sendResult.error && (
+                    <Alert variant="destructive" className="relative z-50 border-2 rounded-2xl shadow-2xl shadow-red-500/10">
+                    <AlertCircle className="h-5 w-5" />
+                    <AlertDescription className="text-base">{sendResult.error}</AlertDescription>
+                    </Alert>
                     )}
                   </CardContent>
                 </Card>
@@ -580,7 +632,7 @@ export default function VaultifyApp() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="p-8 space-y-8">
                     <div className="space-y-3">
                       <Label htmlFor="retrieveToken" className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -620,8 +672,8 @@ export default function VaultifyApp() {
                       </div>
                     </div>
 
-                    <Button 
-                      onClick={handleRetrieveSecret} 
+                    <Button
+                      onClick={handleRetrieveSecret}
                       disabled={loading || !retrieveToken.trim() || !retrievePassword.trim()}
                       className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/30 disabled:opacity-50 disabled:hover:scale-100"
                       size="lg"
@@ -630,8 +682,8 @@ export default function VaultifyApp() {
                       {loading ? "Retrieving & Decrypting..." : "Retrieve Secret"}
                     </Button>
 
-                    {result && result.success && result.retrievedSecret && (
-                      <Alert className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:border-green-800 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl p-6">
+                    {retrieveResult && retrieveResult.success && retrieveResult.retrievedSecret && (
+                      <Alert className="relative z-50 border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:border-green-800 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl p-6 shadow-2xl shadow-green-500/10">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="p-2 rounded-xl bg-green-100 dark:bg-green-900/30">
                             <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -640,20 +692,20 @@ export default function VaultifyApp() {
                             ✨ Secret retrieved successfully!
                           </div>
                         </div>
-                        
+
                         <AlertDescription className="space-y-4">
-                          <div className="rounded-2xl bg-slate-50 dark:bg-slate-800 p-6 border-2 border-slate-200 dark:border-slate-600">
-                            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 block">
+                          <div className="rounded-2xl bg-white dark:bg-slate-800 p-6 border-2 border-green-200 dark:border-green-600">
+                            <Label className="text-sm font-semibold text-green-800 dark:text-green-200 mb-3 block">
                               Your Secret:
                             </Label>
                             <div className="font-mono text-base break-all bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-600">
-                              {result.retrievedSecret}
+                              {retrieveResult.retrievedSecret}
                             </div>
                           </div>
-                          
-                          <div className="text-sm text-slate-600 dark:text-slate-300 space-y-2">
+
+                          <div className="text-sm text-green-700 dark:text-green-300 space-y-2">
                             <p className="flex items-center gap-2">
-                              {result.readsRemaining === 0 ? (
+                              {retrieveResult.readsRemaining === 0 ? (
                                 <>
                                   <span className="text-amber-600 dark:text-amber-400">⚠️</span>
                                   <span className="font-medium">This secret has been deleted after retrieval.</span>
@@ -661,23 +713,23 @@ export default function VaultifyApp() {
                               ) : (
                                 <>
                                   <span className="text-blue-600 dark:text-blue-400">📊</span>
-                                  <span className="font-medium">Reads remaining: {result.readsRemaining}</span>
+                                  <span className="font-medium">Reads remaining: {retrieveResult.readsRemaining}</span>
                                 </>
                               )}
                             </p>
                             <p>
-                              <span className="font-medium">Created:</span> {new Date(result.createdAt).toLocaleString()}
+                              <span className="font-medium">Created:</span> {new Date(retrieveResult.createdAt).toLocaleString()}
                             </p>
                           </div>
                         </AlertDescription>
                       </Alert>
                     )}
 
-                    {result && result.error && (
-                      <Alert variant="destructive" className="border-2 rounded-2xl">
-                        <AlertCircle className="h-5 w-5" />
-                        <AlertDescription className="text-base">{result.error}</AlertDescription>
-                      </Alert>
+                    {retrieveResult && retrieveResult.error && (
+                    <Alert variant="destructive" className="relative z-50 border-2 rounded-2xl shadow-2xl shadow-red-500/10">
+                    <AlertCircle className="h-5 w-5" />
+                    <AlertDescription className="text-base">{retrieveResult.error}</AlertDescription>
+                    </Alert>
                     )}
                   </CardContent>
                 </Card>
@@ -701,7 +753,7 @@ export default function VaultifyApp() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="p-8">
                     {storedSecrets.length === 0 ? (
                       <div className="text-center py-16">
@@ -714,8 +766,8 @@ export default function VaultifyApp() {
                         <p className="text-slate-600 dark:text-slate-300 mb-8 max-w-md mx-auto">
                           Secrets you create will appear here for easy management. Start by creating your first secret.
                         </p>
-                        <Button 
-                          onClick={() => setActiveTab("send")} 
+                        <Button
+                          onClick={() => setActiveTab("send")}
                           className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl px-8 py-3 text-base font-semibold transition-all duration-300 hover:scale-105 shadow-lg shadow-purple-500/25"
                         >
                           Create Your First Secret
@@ -756,7 +808,7 @@ export default function VaultifyApp() {
                             </Card>
                           ))}
                         </div>
-                        
+
                         <div className="space-y-4">
                           <h3 className="text-xl font-bold text-slate-900 dark:text-white">Recent Secrets</h3>
                           <div className="space-y-4">
@@ -764,7 +816,7 @@ export default function VaultifyApp() {
                               const isExpired = new Date(secret.expiresAt) <= new Date();
                               const timeUntilExpiry = new Date(secret.expiresAt).getTime() - new Date().getTime();
                               const hoursLeft = Math.max(0, Math.floor(timeUntilExpiry / (1000 * 60 * 60)));
-                              
+
                               return (
                                 <Card key={index} className={`border-2 border-slate-200 dark:border-slate-700 rounded-2xl transition-all duration-300 hover:shadow-lg ${isExpired ? "opacity-60" : "hover:scale-[1.02]"}`}>
                                   <CardContent className="p-6">
@@ -794,21 +846,21 @@ export default function VaultifyApp() {
                                         </div>
                                       </div>
                                       <div className="flex gap-2 ml-4">
-                                        <Button 
-                                          size="sm" 
-                                          variant="outline" 
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
                                           onClick={() => copyToClipboard(secret.shareUrl)}
                                           disabled={isExpired}
                                           className="rounded-xl transition-all duration-300 hover:scale-105"
                                         >
                                           <Copy className="h-4 w-4" />
                                         </Button>
-                                        <Button 
-                                          size="sm" 
-                                          variant="outline" 
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
                                           onClick={() => {
-                                            generateQRCode(secret.shareUrl);
-                                            setResult({ success: true, ...secret });
+                                          generateQRCode(secret.shareUrl);
+                                          setSendResult({ success: true, ...secret });
                                           }}
                                           disabled={isExpired}
                                           className="rounded-xl transition-all duration-300 hover:scale-105"
@@ -855,7 +907,7 @@ export default function VaultifyApp() {
               Your secrets are encrypted in your browser before transmission. The server never sees your plaintext data.
               Built with military-grade security and privacy-first architecture.
             </p>
-            
+
             <div className="flex justify-center items-center gap-6 pt-6 text-sm text-slate-500 dark:text-slate-400">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4" />
