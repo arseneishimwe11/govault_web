@@ -845,7 +845,7 @@ export default function VaultifyApp() {
                 </div>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                GOVault
+                GoVault
               </span>
             </div>
             <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">
