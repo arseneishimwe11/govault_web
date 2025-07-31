@@ -213,7 +213,7 @@ export default function VaultifyApp() {
             <div className="flex flex-wrap justify-center items-center gap-6 lg:gap-8 text-sm text-slate-500 dark:text-slate-400">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                <span>Trusted by 50,000+ users</span>
+                <span>Trusted by 5000+ users</span>
               </div>
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-yellow-500" />
@@ -221,7 +221,7 @@ export default function VaultifyApp() {
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="h-4 w-4 text-green-500" />
-                <span>99.9% Uptime</span>
+                <span>98.9% Uptime</span>
               </div>
             </div>
 
