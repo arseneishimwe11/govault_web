@@ -160,7 +160,7 @@ export default function VaultifyApp() {
                   <Shield className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-[-4px]">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                   GoVault
                 </h1>
